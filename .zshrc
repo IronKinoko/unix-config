@@ -1,5 +1,14 @@
-eval "$(starship init zsh)"
-eval "$(zoxide init zsh)"
+if command -v starship >/dev/null 2>&1; then
+    eval "$(starship init zsh)"
+fi
+
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init zsh)"
+fi
+
+if command -v fnm >/dev/null 2>&1; then
+    eval "$(fnm env --use-on-cd --shell zsh)"
+fi
 
 if command -v fzf >/dev/null 2>&1; then
     source <(fzf --zsh)
@@ -32,6 +41,35 @@ compinit
 
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
+if [[ -r "$HOME/.config/zsh/plugins/svn.zsh" ]]; then
+    source "$HOME/.config/zsh/plugins/svn.zsh"
+fi
+
+alias reset_navicat="sh ~/.config/sh/reset-navicat.sh"
+alias nv="nvim"
+
 export NODE_OPTIONS=--no-deprecation
 
 export WORDCHARS=${WORDCHARS/\//}
+
+
+zle_highlight=('paste:none')
+export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+
+if [[ -r "$HOME/.local/bin/env" ]]; then
+    . "$HOME/.local/bin/env"
+fi
+
+
+
+# bun completions
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=("$HOME/.docker/completions" $fpath)
+autoload -Uz compinit
+(( ${+_comps[docker]} )) || compinit
+# End of Docker CLI completions

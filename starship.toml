@@ -12,6 +12,7 @@ $vcsh\
 $fossil_branch\
 $fossil_metrics\
 ${custom.svn_branch}\
+${custom.svn_branch_status}\
 $git_branch\
 $git_commit\
 $git_state\
@@ -309,6 +310,12 @@ command = "svn info --show-item relative-url 2>/dev/null | sed -E 's#.*trunk.*#t
 format = "on [$symbol$output]($style) "
 symbol = " "
 style = "bold purple"
+[custom.svn_branch_status]
+description = "Displays the current Subversion branch and its status."
+when = "svn --non-interactive info >/dev/null 2>&1 && svn status --non-interactive 2>/dev/null | grep -E '^[AMDR]' >/dev/null"
+command = "echo '[!]'"
+format = "[$output]($style) "
+style = "bold red"
 
 [time]
 disabled = false
