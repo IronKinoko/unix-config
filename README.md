@@ -76,7 +76,7 @@ brew bundle install --file ./Brewfile
 | 编辑器与开发工具 | `neovim`, `subversion`, `gh`, `go`, `python-setuptools`, `pkgconf` |
 | 命令行工具 | `bat`, `eza`, `fastfetch`, `fd`, `ripgrep`, `shellcheck`, `unar` |
 | 图像与 SVG 依赖 | `jpeg`, `librsvg` |
-| GUI 与平台工具 | `ghostty`, `input-source-pro`, `android-platform-tools` |
+| GUI 与平台工具 | `ghostty`, `orbstack`, `android-platform-tools` |
 
 当前没有 Homebrew tap，也没有需要由 `brew services` 常驻启动的服务。
 
@@ -115,8 +115,6 @@ exec zsh
 | `~/.config/sh/reset-navicat.sh` | Navicat 重置脚本 | 从旧机器复制，并确保有执行权限 |
 | `~/.local/bin/env` | `uv` 等用户级工具的 Shell 环境 | 安装对应工具后按官方方式生成 |
 | `~/.bun` | Bun 运行时及补全 | 单独安装 Bun；当前不是 Homebrew formula/cask |
-| `~/.docker/completions` | Docker CLI 补全 | 安装 Docker Desktop 后生成 |
-| Docker Desktop | Docker Engine 与 CLI | 从 Docker 官网安装 |
 | Navicat Premium | 数据库客户端 | 单独安装 |
 | Visual Studio Code | 编辑器 | 单独安装，并另行导出扩展列表 |
 
@@ -145,5 +143,5 @@ command -v brew starship zoxide fnm fzf nvim svn gh go
 
 ```sh
 brew bundle check --file ./Brewfile --verbose
-git diff -- Brewfile MIGRATION.md .zshrc starship.toml
+git diff -- Brewfile README.md .zshrc starship.toml
 ```

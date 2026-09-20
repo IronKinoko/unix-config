@@ -190,7 +190,6 @@ cat <<'EOF'
 
 Manual items are not installed by this script:
   - Bun (~/.bun)
-  - Docker Desktop (~/.docker)
   - Navicat Premium and its local helper script
   - Visual Studio Code extensions
 EOF

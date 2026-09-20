@@ -27,4 +27,5 @@ brew "librsvg"
 
 # GUI applications and platform tools
 cask "ghostty"
+cask "orbstack"
 cask "android-platform-tools"
