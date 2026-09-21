@@ -11,7 +11,7 @@ usage() {
     cat <<'EOF'
 Usage: ./migrate.sh [options]
 
-Restore Homebrew applications and tracked shell configuration.
+Restore Homebrew applications and tracked configuration.
 
 Options:
   --dry-run    Print actions without changing the system.
@@ -64,15 +64,15 @@ find_brew() {
     return 1
 }
 
-link_item() {
+copy_item() {
     local source_path="$1"
     local destination="$2"
     local label="$3"
 
     [[ -e "$source_path" ]] || die "Missing tracked file: $source_path"
 
-    if [[ -L "$destination" ]] && [[ "$(readlink "$destination")" == "$source_path" ]]; then
-        printf '  = %s already linked\n' "$label"
+    if [[ -f "$destination" ]] && [[ ! -L "$destination" ]] && cmp -s "$source_path" "$destination"; then
+        printf '  = %s already up to date\n' "$label"
         return
     fi
 
@@ -87,7 +87,7 @@ link_item() {
     fi
 
     run mkdir -p "$(dirname "$destination")"
-    run ln -s "$source_path" "$destination"
+    run cp "$source_path" "$destination"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -112,7 +112,12 @@ done
 
 [[ "$(uname -s)" == "Darwin" ]] || die "This migration script only supports macOS."
 
-for required_file in .zshrc .zprofile starship.toml Brewfile; do
+for required_file in \
+    .zshrc \
+    .zprofile \
+    starship.toml \
+    ghostty/config.ghostty \
+    Brewfile; do
     [[ -f "$REPO_DIR/$required_file" ]] || die "Missing repository file: $required_file"
 done
 
@@ -154,10 +159,14 @@ if [[ "$SKIP_BREW" == false ]]; then
     fi
 fi
 
-log "Linking tracked shell configuration"
-link_item "$REPO_DIR/.zshrc" "$HOME/.zshrc" "\$HOME/.zshrc"
-link_item "$REPO_DIR/.zprofile" "$HOME/.zprofile" "\$HOME/.zprofile"
-link_item "$REPO_DIR/starship.toml" "$HOME/.config/starship.toml" "\$HOME/.config/starship.toml"
+log "Copying tracked configuration"
+copy_item "$REPO_DIR/.zshrc" "$HOME/.zshrc" "\$HOME/.zshrc"
+copy_item "$REPO_DIR/.zprofile" "$HOME/.zprofile" "\$HOME/.zprofile"
+copy_item "$REPO_DIR/starship.toml" "$HOME/.config/starship.toml" "\$HOME/.config/starship.toml"
+copy_item \
+    "$REPO_DIR/ghostty/config.ghostty" \
+    "$HOME/Library/Application Support/com.mitchellh.ghostty/config.ghostty" \
+    "\$HOME/Library/Application Support/com.mitchellh.ghostty/config.ghostty"
 
 log "Validating configuration"
 run zsh -n "$REPO_DIR/.zshrc"
@@ -168,8 +177,14 @@ elif [[ "$DRY_RUN" == false ]]; then
     warn "starship is not available; skipped Starship validation."
 fi
 
+if command -v ghostty >/dev/null 2>&1; then
+    run ghostty +validate-config --config-file "$REPO_DIR/ghostty/config.ghostty"
+elif [[ "$DRY_RUN" == false ]]; then
+    warn "ghostty is not available; skipped Ghostty validation."
+fi
+
 missing_commands=""
-for command_name in starship zoxide fnm fzf nvim svn gh go; do
+for command_name in starship zoxide fnm fzf nvim svn gh go ghostty; do
     if ! command -v "$command_name" >/dev/null 2>&1; then
         missing_commands="$missing_commands $command_name"
     fi

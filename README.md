@@ -1,7 +1,7 @@
 # macOS 工作环境迁移
 
 本文档记录当前机器的开发环境恢复方式。应用清单以仓库根目录的
-`Brewfile` 为准，当前快照验证于 2026-09-18，平台为 Apple Silicon
+`Brewfile` 为准，当前快照验证于 2026-09-21，平台为 Apple Silicon
 macOS，Homebrew 前缀为 `/opt/homebrew`。
 
 ## 1. 一键恢复
@@ -23,9 +23,9 @@ macOS，Homebrew 前缀为 `/opt/homebrew`。
 1. 检查并安装 Xcode Command Line Tools。
 2. 检查 Homebrew；缺失时按当前架构安装。
 3. 根据 `Brewfile` 安装 formula 和 cask。
-4. 备份已有 Shell 配置，并链接仓库中的 `.zshrc`、`.zprofile` 和
-   `starship.toml`。
-5. 校验 zsh 和 Starship 配置。
+4. 备份已有 Shell 与 Ghostty 配置，并复制仓库中的 `.zshrc`、
+   `.zprofile`、`starship.toml` 和 `ghostty/`。
+5. 校验 zsh、Starship 和 Ghostty 配置。
 
 已有配置会被移动到
 `~/.unix-config-backup-YYYYMMDD-HHMMSS`，不会直接覆盖。仅恢复仓库
@@ -80,16 +80,23 @@ brew bundle install --file ./Brewfile
 
 当前没有 Homebrew tap，也没有需要由 `brew services` 常驻启动的服务。
 
-## 4. 手动恢复 Shell 配置
+## 4. 手动恢复 Shell 与 Ghostty 配置
 
-建议用符号链接让仓库成为配置的唯一来源：
+建议先备份已有配置，再将仓库内容复制到实际配置路径：
 
 ```sh
 mkdir -p "$HOME/.config"
-ln -sfn "$PWD/.zshrc" "$HOME/.zshrc"
-ln -sfn "$PWD/.zprofile" "$HOME/.zprofile"
-ln -sfn "$PWD/starship.toml" "$HOME/.config/starship.toml"
+cp "$PWD/.zshrc" "$HOME/.zshrc"
+cp "$PWD/.zprofile" "$HOME/.zprofile"
+cp "$PWD/starship.toml" "$HOME/.config/starship.toml"
+
+ghostty_config_dir="$HOME/Library/Application Support/com.mitchellh.ghostty"
+mkdir -p "$ghostty_config_dir"
+cp "$PWD/ghostty/config.ghostty" "$ghostty_config_dir/config.ghostty"
 ```
+
+macOS 应用的默认配置目录是
+`~/Library/Application Support/com.mitchellh.ghostty/`。
 
 重新启动 Shell：
 
@@ -127,8 +134,9 @@ API key 等秘密信息不写入仓库。迁移时应从密码管理器或受保
 brew bundle check --file ./Brewfile --verbose
 zsh -n .zshrc
 STARSHIP_CONFIG="$PWD/starship.toml" starship print-config >/dev/null
+ghostty +validate-config --config-file "$PWD/ghostty/config.ghostty"
 
-command -v brew starship zoxide fnm fzf nvim svn gh go
+command -v brew starship zoxide fnm fzf nvim svn gh go ghostty
 ```
 
 `brew bundle check` 在应用已安装但存在可升级版本时也可能返回非零；先查看
@@ -143,5 +151,5 @@ command -v brew starship zoxide fnm fzf nvim svn gh go
 
 ```sh
 brew bundle check --file ./Brewfile --verbose
-git diff -- Brewfile README.md .zshrc starship.toml
+git diff -- Brewfile README.md .zshrc starship.toml ghostty
 ```
